@@ -1,0 +1,77 @@
+{
+    "players": {
+        "SUPER_ADMIN": {
+            "id": "SUPER_ADMIN",
+            "name": "👑 आपका वॉलेट (मालिक)",
+            "depositWallet": 100000,
+            "winningWallet": 25000,
+            "bonusWallet": 5000,
+            "vipLevel": "Owner",
+            "mobile": "0000000000",
+            "passbook": []
+        },
+        "user_123": {
+            "id": "user_123",
+            "name": "रोहित शर्मा",
+            "depositWallet": 500,
+            "winningWallet": 0,
+            "bonusWallet": 62,
+            "vipLevel": "Gold",
+            "mobile": "9876543210",
+            "passbook": [
+                {
+                    "date": "07-July-2026",
+                    "type": "Debit",
+                    "desc": "💸 विथड्रॉल पास (Govt TDS Tax ₹150 काटा गया)",
+                    "amount": 500,
+                    "wallet": "winningWallet"
+                },
+                {
+                    "date": "07-July-2026",
+                    "type": "Debit",
+                    "desc": "✂️ एडमिन द्वारा डेबिट किया गया",
+                    "amount": 420,
+                    "wallet": "depositWallet"
+                },
+                {
+                    "date": "07-July-2026",
+                    "type": "Credit",
+                    "desc": "👑 एडमिन द्वारा क्रेडिट किया गया",
+                    "amount": 420,
+                    "wallet": "depositWallet"
+                },
+                {
+                    "date": "07-July-2026",
+                    "type": "Credit",
+                    "desc": "👑 एडमिन द्वारा क्रेडिट किया गया",
+                    "amount": 12,
+                    "wallet": "bonusWallet"
+                },
+                {
+                    "date": "07-July-2026",
+                    "type": "Debit",
+                    "desc": "💸 विथड्रॉल पास (Govt TDS Tax ₹150 काटा गया)",
+                    "amount": 500,
+                    "wallet": "winningWallet"
+                }
+            ]
+        }
+    },
+    "settings": {
+        "commissionRate": 20,
+        "minDeposit": 50,
+        "minWithdrawal": 100,
+        "maxWithdrawal": 10000,
+        "botDifficulty": "Hard",
+        "minPoolEntryFee": 5,
+        "maxPoolEntryFee": 10000,
+        "tdsPercent": 30,
+        "qrCodeUrl": "https://yourdomain.com",
+        "manualUpiId": "owner@ybl",
+        "isQrVisible": "true",
+        "mongoUri": "mongodb+srv://...",
+        "fast2smsApiKey": "YOUR_FAST2SMS_API_KEY_HERE",
+        "cashfreeAppId": "YOUR_CASHFREE_APP_ID_HERE",
+        "cashfreeSecret": "YOUR_CASHFREE_SECRET_HERE"
+    }
+}
