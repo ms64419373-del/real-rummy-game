@@ -28,15 +28,39 @@
             <div class="wallet" style="border-color: #10B981;"><div>🟢 विनिंग</div><span id="win-bal">₹0</span></div>
             <div class="wallet" style="border-color: #F59E0B;"><div>🟡 बोनस</div><span id="bon-bal">₹0</span></div>
         </div>
+
         <div class="features-list">
             <b style="color: #FFD700; display: block; margin-bottom: 8px; font-size: 14px;">🔥 लाइव मेगा फीचर्स:</b>
             <li>सरकारी नियमों के अनुसार 30% TDS कटौती सुविधा [INDEX_6]।</li>
             <li>5,000 और 10,000 खिलाड़ियों वाले महा मेगा टूर्नामेंट्स [INDEX_6]।</li>
             <li>iTech Labs द्वारा प्रमाणित RNG 100% सिक्योर ताश इंजन।</li>
-            <li>Fast2SMS लाइव सुरक्षित मोबाइल ओटीपी लॉगिन सिस्टम।</li>
+            <li>Fast2SMS लाइव सुरक्षित मोबाइल ओटीपी लॉगिन系统।</li>
         </div>
+
+        <!-- 📲 डाउनलोड बटन का बिल्कुल सटीक रास्ता भाई -->
         <a href="/real_rummy.apk" class="btn-download" download>📥 DOWNLOAD APK FILE (रमी ऐप डाउनलोड करें)</a>
         <p style="font-size: 11px; color: #6B7280; margin: 0;">*Android 6.0+ सपोर्टेड | सुरक्षित डायरेक्ट डाउनलोड लिंक</p>
     </div>
+
+    <!-- 📡 लाइव सर्वर कनेक्शन स्क्रिप्ट जो आपके एडमिन पैनल के डेटाबेस को सीधा स्क्रीन पर जोड़ेगी -->
+    <script>
+        const SERVER_URL = "https://onrender.com";
+        
+        async function fetchLiveWallet() {
+            try {
+                const res = await fetch(`${SERVER_URL}/api/wallet-status`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('dep-bal').innerText = `₹${data.depositWallet || 0}`;
+                    document.getElementById('win-bal').innerText = `₹${data.winningWallet || 0}`;
+                    document.getElementById('bon-bal').innerText = `₹${data.bonusWallet || 0}`;
+                }
+            } catch (err) {
+                console.log("लाइव बैलेंस अपडेट करने में बाधा आई:", err);
+            }
+        }
+        // पेज खुलते ही तुरंत लाइव डेटा सिंक करें
+        window.onload = fetchLiveWallet;
+    </script>
 </body>
 </html>
