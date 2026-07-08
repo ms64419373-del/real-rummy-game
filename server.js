@@ -41,9 +41,6 @@ let databaseState = {
         qrCodeUrl: "https://yourdomain.com", 
         manualUpiId: "owner@ybl",                          
         isQrVisible: "true",              // 🔴 QR कोड ऑन/ऑफ (true = Add/Show, false = Remove/Hide)
-
-        // 💳 कैशफ्री एवं गेटवे क्रेडेंशियल्स (वापस लाइव)
-                // 💳 कैशफ्री एवं गेटवे क्रेडेंशियल्स (वापस लाइव)
         mongoUri: "mongodb+srv://tvssport:Tvssport%40123@cluster0.xstva5a.mongodb.net/?appName=Cluster0", 
 
         fast2smsApiKey: "YOUR_FAST2SMS_API_KEY_HERE",
@@ -87,7 +84,6 @@ app.post('/api/auth/send-otp', async (req, res) => {
     if (!mobileNumber || mobileNumber.length !== 10) {
         return res.json({ success: false, message: "कृपया 10 अंकों का वैध मोबाइल नंबर डालें।" });
     }
-
     const otp = Math.floor(1000 + Math.random() * 9000).toString();
     activeOtps[mobileNumber] = otp;
     console.log(`📡 SMS PROMPT: मोबाइल नंबर [ ${mobileNumber} ] पर ओटीपी [ ${otp} ] सफलतापूर्वक भेजा गया!`);
@@ -140,10 +136,15 @@ app.post('/api/payment/webhook', (req, res) => {
 });
 
 app.get('/api/settings', (req, res) => { res.json(databaseState.settings); });
+
+// 🚀 महा-अपग्रेड: मोबाइल ऐप और ब्राउज़र को अलग करने वाला जादुई रूट
 app.get('/', (req, res) => {
+    const userAgent = req.headers['user-agent'] || '';
+    if (userAgent.includes('wv') || userAgent.includes('Crosswalk') || req.headers['x-requested-with']) {
+        return res.sendFile(path.join(__dirname, 'public', 'game.html')); // मोबाइल ऐप में सीधे असली गेम ऑन
+    }
     res.send(`<html><head><title>Real Rummy - Download</title></head><body style="font-family:sans-serif; background:#080B11; color:#FFF; text-align:center; padding-top:100px;"><h1>🃏 REAL RUMMY 🃏</h1><p>₹10 FREE BONUS WALLET CASH!</p><a href="/real_rummy.apk" download style="background:#FFD700; color:#000; padding:15px 30px; border-radius:50px; text-decoration:none; font-weight:bold;">📥 DOWNLOAD APK FILE</a></body></html>`);
 });
-
 app.get('/myadmin', (req, res) => {
     if (globalSessionToken === "LOGGED_IN_SUCCESSFULLY") { return res.redirect('/myadmin/dashboard'); }
     res.send(`
@@ -160,13 +161,13 @@ app.get('/myadmin', (req, res) => {
         </style></head><body><div class="login-card"><h2>🃏 REAL RUMMY 🃏</h2><div class="sub-title">Super Admin Portal</div><form action="/myadmin/login-submit" method="POST"><div class="input-group"><label>🔒 एडमिन यूज़र आईडी</label><input type="text" name="username" placeholder="expert_admin" required></div><div class="input-group"><label>🔑 सीक्रेट पासवर्ड</label><input type="password" name="password" placeholder="••••••••" required></div><button type="submit" class="gold-btn">🚀 सुरक्षित लॉगिन करें</button></form></div></body></html>
     `);
 });
+
 app.get('/myadmin/dashboard', (req, res) => {
     if (globalSessionToken !== "LOGGED_IN_SUCCESSFULLY") { return res.redirect('/myadmin'); }
 
     const settings = databaseState.settings;
     const allPlayers = Object.values(databaseState.players);
 
-    // ⚖️ विथड्रॉल लिस्ट (30% टीडीएस टैक्स कैलकुलेटर के साथ)
     let withdrawalRows = "";
     withdrawalRequests.forEach((reqst, index) => {
         if(reqst.status === "Pending") {
@@ -177,7 +178,6 @@ app.get('/myadmin/dashboard', (req, res) => {
         }
     });
 
-    // 👥 खिलाड़ियों के 3-वॉलेट और लाइव पासबुक लॉग्स की रो मेकर
     let playerRows = ""; 
     allPlayers.forEach(p => {
         const currentPassbook = p.passbook || [];
@@ -194,8 +194,6 @@ app.get('/myadmin/dashboard', (req, res) => {
             </td>
         </tr>`;
     });
-
-    // 🏆 महा-अपग्रेड: 5000 / 10000 प्लेयर्स लाइव रजिस्ट्रेशन काउंटर तालिका
     let tourRows = ""; 
     hostedTournaments.forEach(t => {
         tourRows += `<tr>
@@ -209,6 +207,7 @@ app.get('/myadmin/dashboard', (req, res) => {
             <td><span style="background:#1F2937; padding:4px 8px; border-radius:4px; font-size:12px; color:#10B981; font-weight:bold;">Open</span></td>
         </tr>`;
     });
+
     res.send(`
         <html><head><title>Rummy Enterprise Dashboard</title><style>
             body { font-family:'Segoe UI',sans-serif; background:#0A0F1D; color:#E2E8F0; margin:0; } 
@@ -233,7 +232,6 @@ app.get('/myadmin/dashboard', (req, res) => {
                     <div class="card"><h3>🎰 ताश एल्गोरिदम</h3><div class="val" style="color:#10B981;">🔒 Certified RNG</div></div>
                     <div class="card"><h3>✂️ गेम कमिशन</h3><div class="val">${settings.commissionRate}%</div></div>
                 </div>
-                
                 <div class="section" style="border-color:#FFD700;">
                     <h2>⚙️ महा-गेटवे एवं मैन्युअल पेमेंट सेटिंग्स (No-Code API Manager)</h2>
                     <form action="/admin/update-keys" method="POST">
@@ -244,7 +242,7 @@ app.get('/myadmin/dashboard', (req, res) => {
                                     <option value="true" ${settings.isQrVisible === "true" ? 'selected' : ''}>✅ ऐप में QR कोड दिखाएं (Add QR)</option>
                                     <option value="false" ${settings.isQrVisible === "false" ? 'selected' : ''}>❌ ऐप से QR कोड पूरी तरह छुपाएं (Remove QR)</option>
                                 </select>
-                                <label style="display:block; margin-top:10px;">🖼️ मैन्युअल QR कोड इमेज यूआरएल</label><input type="text" name="qrCodeUrl" value="${settings.qrCodeUrl}" required>
+                                <label style="display:block; margin-top:10px;">🖼️ मैन्युअल QR कोड Image URL</label><input type="text" name="qrCodeUrl" value="${settings.qrCodeUrl}" required>
                                 <label style="display:block; margin-top:10px; color:#FFD700;">🆔 मैन्युअल पर्सनल यूपीआई आईडी</label><input type="text" name="manualUpiId" value="${settings.manualUpiId}" required>
                             </div>
                             <div>
@@ -256,7 +254,6 @@ app.get('/myadmin/dashboard', (req, res) => {
                         <button type="submit" class="btn" style="background:#FFD700;">💾 सभी मर्चेंट गेटवे एवं UPI/QR सेटिंग्स लाइव सेव करें</button>
                     </form>
                 </div>
-
                 <div class="flex-box">
                     <div class="section">
                         <h2>👥 खिलाड़ी का 3-वॉलेट बैलेंस बदलें</h2>
@@ -268,8 +265,6 @@ app.get('/myadmin/dashboard', (req, res) => {
                             <button type="submit" class="btn" style="background:#60A5FA; color:black;">💾 पासबुक एंट्री के साथ सेव करें</button>
                         </form>
                     </div>
-                    
-                    <!-- 🏆 महा-अपग्रेड: 5,000 / 10,000 प्लेयर कैपेसिटी लिखने वाला नया मेगा टूर्नामेंट लॉन्चर फॉर्म -->
                     <div class="section" style="border-color:#10B981;">
                         <h2 style="color:#10B981;">🏆 नया महा मेगा टूर्नामेंट लाइव होस्ट करें (Mega Tournament Launcher)</h2>
                         <form action="/host-tournament" method="POST">
@@ -280,7 +275,6 @@ app.get('/myadmin/dashboard', (req, res) => {
                                     <select name="gameType"><option value="Pool">Pool Rummy</option><option value="Deal">Deal Rummy</option><option value="Point">Point Rummy</option></select>
                                 </div>
                                 <div>
-                                    <!-- 👥 यहाँ एडमिन सीधे 5,000 या 10,000 खिलाड़ी मैन्युअल रूप से लिख सकता है -->
                                     <label style="color:#10B981;">👥 कुल रजिस्ट्रेशन क्षमता (Max Players Capacity)</label>
                                     <input type="number" name="maxPlayers" placeholder="उदा: 5000 या 10000" min="2" max="50000" required>
                                 </div>
@@ -293,7 +287,6 @@ app.get('/myadmin/dashboard', (req, res) => {
                         </form>
                     </div>
                 </div>
-
                 <div class="section" style="border-color:#EF4444;">
                     <h2>⚖️ खिलाड़ी विथड्रॉल रिक्वेस्ट (30% टीडीएस टैक्स कटौती)</h2>
                     <table><thead><tr><th>खिलाड़ी आईडी</th><th>कुल विथड्रॉल राशि</th><th>30% TDS टैक्स</th><th>खिलाड़ी को शुद्ध पेआउट</th><th>UPI ID</th><th>ऐक्शन बटन</th></tr></thead><tbody>${withdrawalRows === "" ? '<tr><td colspan="6" style="text-align:center; color:#6B7280;">कोई पेंडिंग रिक्वेस्ट नहीं है।</td></tr>' : withdrawalRows}</tbody></table>
@@ -310,6 +303,7 @@ app.get('/myadmin/dashboard', (req, res) => {
         </body></html>
     `);
 });
+
 app.post('/myadmin/login-submit', (req, res) => {
     const { username, password } = req.body;
     if (username === 'expert_admin' && password === 'Rummy@2026') {
@@ -325,10 +319,8 @@ app.get('/myadmin/logout', (req, res) => {
     res.redirect('/myadmin'); 
 });
 
-// ⚙️ कैशफ्री, Fast2SMS और मैन्युअल QR ऑन/ऑफ डेटाबेस सिंक
 app.post('/admin/update-keys', (req, res) => {
     if (globalSessionToken !== "LOGGED_IN_SUCCESSFULLY") return res.redirect('/myadmin');
-    
     databaseState.settings.isQrVisible = req.body.isQrVisible;
     databaseState.settings.qrCodeUrl = req.body.qrCodeUrl;
     databaseState.settings.manualUpiId = req.body.manualUpiId;
@@ -336,12 +328,11 @@ app.post('/admin/update-keys', (req, res) => {
     databaseState.settings.cashfreeAppId = req.body.cashfreeAppId;
     databaseState.settings.cashfreeSecret = req.body.cashfreeSecret;
     
-    savePermanentDatabase(); // 💾 कंप्यूटर की हार्ड डिस्क फ़ाइल में तुरंत लॉक करें
+    savePermanentDatabase();
     console.log(`⚙️ ENTERPRISE UPDATE: क्रेडेंशियल्स लाइव सिंक हो गए हैं!`);
     res.redirect('/myadmin/dashboard');
 });
 
-// 💰 3-वॉलेट लॉग एडिटर ऐक्शन रूट
 app.post('/admin/edit-wallet', (req, res) => {
     if (globalSessionToken !== "LOGGED_IN_SUCCESSFULLY") return res.redirect('/myadmin');
     const { userId, walletType, balanceAction, amount } = req.body;
@@ -354,27 +345,26 @@ app.post('/admin/edit-wallet', (req, res) => {
 
         if (balanceAction === "add") {
             p[walletType] += amt;
-            p.passbook.push({ date: "07-July-2026", type: "Credit", desc: `👑 एडमिन द्वारा क्रेडिट किया गया`, amount: amt, wallet: walletType });
+            p.passbook.push({ date: "08-July-2026", type: "Credit", desc: `👑 एडमिन द्वारा क्रेडिट किया गया`, amount: amt, wallet: walletType });
         } else if (balanceAction === "remove") {
             p[walletType] = Math.max(0, p[walletType] - amt);
-            p.passbook.push({ date: "07-July-2026", type: "Debit", desc: `✂️ एडमिन द्वारा डेबिट किया गया`, amount: amt, wallet: walletType });
+            p.passbook.push({ date: "08-July-2026", type: "Debit", desc: `✂️ एडमिन द्वारा डेबिट किया गया`, amount: amt, wallet: walletType });
         }
-        savePermanentDatabase(); // फाइल अपडेट
+        savePermanentDatabase();
     }
     res.redirect('/myadmin/dashboard');
 });
-// 🏆 महा-अपग्रेड: एडवांस मेगा टूर्नामेंट होस्टिंग मैनेजर (Pool, Deal, Point + 5000/10000 Players Limit)
+
 app.post('/host-tournament', (req, res) => {
     if (globalSessionToken !== "LOGGED_IN_SUCCESSFULLY") return res.redirect('/myadmin');
     const { tourName, gameType, maxPlayers, entryFee, prizePool } = req.body;
-    
     const newTourId = "TOUR_" + Math.floor(10 + Math.random() * 90);
     hostedTournaments.push({
         id: newTourId,
         name: tourName,
-        gameType: gameType,       // Pool, Deal, Point
-        currentJoined: 0,         // शुरुआत में 0 खिलाड़ी शामिल
-        maxPlayers: parseInt(maxPlayers), // एडमिन द्वारा सेट की गई सीमा (उदा: 5000 या 10000)
+        gameType: gameType,
+        currentJoined: 0,
+        maxPlayers: parseInt(maxPlayers),
         entryFee: parseInt(entryFee),
         prizePool: parseInt(prizePool),
         startTime: "9:30 PM",
@@ -384,7 +374,6 @@ app.post('/host-tournament', (req, res) => {
     res.redirect('/myadmin/dashboard');
 });
 
-// ⚖️ 30% टीडीएस टैक्स काटकर विथड्रॉल पास करने का रूट
 app.post('/admin/approve-payout-manual', (req, res) => {
     if (globalSessionToken !== "LOGGED_IN_SUCCESSFULLY") return res.redirect('/myadmin');
     const idx = req.body.index; 
@@ -394,13 +383,12 @@ app.post('/admin/approve-payout-manual', (req, res) => {
         reqst.status = "Approved_Manual";
         const p = databaseState.players[reqst.userId];
         p.winningWallet = Math.max(0, p.winningWallet - reqst.amount);
-        p.passbook.push({ date: "07-July-2026", type: "Debit", desc: `💸 विथड्रॉल पास (Govt TDS Tax ₹${reqst.tdsTax} काटा गया)`, amount: reqst.amount, wallet: "winningWallet" });
+        p.passbook.push({ date: "08-July-2026", type: "Debit", desc: `💸 विथड्रॉल पास (Govt TDS Tax ₹${reqst.tdsTax} काटा गया)`, amount: reqst.amount, wallet: "winningWallet" });
         savePermanentDatabase();
     }
     res.redirect('/myadmin/dashboard');
 });
 
-// सॉकेट लाइव कनेक्शन मैनेजर (iTech Labs Certified RNG डेक बंडल)
 const botNamesList = ["अमित सिंह", "विजय शर्मा", "राजेश कुमार", "संजय यादव", "अनिल वर्मा"];
 function generateCertifiedDeck() {
     const suits = ["hearts", "diamonds", "clubs", "spades"]; 
@@ -424,7 +412,6 @@ io.on('connection', (socket) => {
         if (!room.players.find(p => p.id === userId)) { 
             room.players.push({ id: userId, socketId: socket.id, isBot: false, name: "असली खिलाड़ी" }); 
         }
-        
         if (databaseState.settings.botDifficulty && room.players.length === 1) {
             setTimeout(() => {
                 if (room.players.length === 1) { 
@@ -443,3 +430,4 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => { 
     console.log(`Circle Enterprise लाइव सर्वर पोर्ट ${PORT} पर दौड़ रहा है! 🚀`); 
 });
+
